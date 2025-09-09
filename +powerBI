@@ -1,0 +1,112 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# ----------------------
+# Step 1: Create Sample Datasets
+# ----------------------
+sales_data = pd.DataFrame({
+    "ProductID": [1, 2, 3, 4],
+    "Product": ["Laptop", "Shirt", "Chips", "Toy Car"],
+    "SalesQty": [50, 200, 500, 150],
+    "Price": [50000, 1500, 50, 300]
+})
+
+inventory_data = pd.DataFrame({
+    "ProductID": [1, 2, 3, 4],
+    "OpeningStock": [100, 400, 800, 300],
+    "ClosingStock": [50, 250, 200, 100]
+})
+
+returns_data = pd.DataFrame({
+    "ProductID": [1, 2, 3, 4],
+    "ReturnQty": [5, 10, 20, 15]
+})
+
+# ----------------------
+# Step 2: Merge Datasets
+# ----------------------
+df = sales_data.merge(inventory_data, on="ProductID").merge(returns_data, on="ProductID")
+
+# ----------------------
+# Step 3: Feature Engineering
+# ----------------------
+# Net Sales = (SalesQty - ReturnQty) * Price
+df["NetSales"] = (df["SalesQty"] - df["ReturnQty"]) * df["Price"]
+
+# Inventory Turnover = Net Sales / Average Inventory
+df["AvgInventory"] = (df["OpeningStock"] + df["ClosingStock"]) / 2
+df["InventoryTurnover"] = df["NetSales"] / df["AvgInventory"]
+
+print(df)
+
+# ----------------------
+# Step 4: Visualization (Combo Chart)
+# ----------------------
+fig, ax1 = plt.subplots(figsize=(8,5))
+
+# Bar chart → Net Sales
+ax1.bar(df["Product"], df["NetSales"], color="skyblue", label="Net Sales")
+ax1.set_xlabel("Product")
+ax1.set_ylabel("Net Sales", color="blue")
+ax1.tick_params(axis="y", labelcolor="blue")
+
+# Line chart → Inventory Turnover
+ax2 = ax1.twinx()
+ax2.plot(df["Product"], df["InventoryTurnover"], color="red", marker="o", label="Inventory Turnover")
+ax2.set_ylabel("Inventory Turnover", color="red")
+ax2.tick_params(axis="y", labelcolor="red")
+
+plt.title("Net Sales vs Inventory Turnover")
+fig.tight_layout()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+Load Data
+
+Open Power BI → Home > Get Data > Excel/CSV.
+
+Import your Sales, Inventory, and Returns tables.
+
+Transform Data (Power Query)
+
+Go to Transform Data.
+
+Ensure relationships exist via ProductID.
+
+If not, manually create relationships (Manage Relationships).
+
+Create Calculated Columns / Measures
+
+In Modeling > New Column/Measure:
+
+Net Sales = (Sales[SalesQty] - Returns[ReturnQty]) * Sales[Price]
+
+Avg Inventory = (Inventory[OpeningStock] + Inventory[ClosingStock]) / 2
+
+Inventory Turnover = DIVIDE([Net Sales], [Avg Inventory])
+
+Build Combo Chart
+
+Go to Visualizations > Combo Chart (Line and Clustered Column)
+
+Drag Product → Axis.
+
+Drag Net Sales → Column Values.
+
+Drag Inventory Turnover → Line Values.
+
+Format chart (colors, labels, dual y-axes).
+
+Enhance Visualization
+
+Add data labels, legends, and tooltips for better clarity.
+
+Optionally add slicers (date, category) for interactivity.
