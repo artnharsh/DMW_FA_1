@@ -1,0 +1,50 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# ----------------------
+# Step 1: Create Raw Dataset with Impurities
+# ----------------------
+data = {
+    "OrderID": [101, 102, 103, 103, 104, 105, 106, 107, 108, 109, 110],
+    "ProductCategory": ["Electronics", "electronics ", "Clothing", "Clothing", None, "Food", "FOOD", "toys", "Toys", "", "Clothing"],
+    "ProductName": ["Laptop", "Mobile", "Shirt", "Shirt", "Pants", "Chips", "Chocolate", "Car", "Ball", "Doll", None],
+    "Quantity": [1, 2, None, 1, 2, 3, "four", 1, 2, None, 1],
+    "Price": [50000, 20000, 1500, 1500, None, 50, 100, 300, 150, 200, 1200],
+}
+
+df = pd.DataFrame(data)
+
+# ----------------------
+# Step 2: Data Cleaning / Preprocessing
+# ----------------------
+
+# Remove duplicates
+df = df.drop_duplicates()
+
+# Handle missing values and wrong data types
+df["Quantity"] = pd.to_numeric(df["Quantity"], errors="coerce")
+df["Quantity"].fillna(df["Quantity"].median(), inplace=True)
+
+# Replace missing product prices with median price
+df["Price"].fillna(df["Price"].median(), inplace=True)
+
+# Fill missing product names and categories
+df["ProductName"].fillna("Unknown", inplace=True)
+df["ProductCategory"] = df["ProductCategory"].replace(["", None], "Misc")
+df["ProductCategory"] = df["ProductCategory"].str.strip().str.lower().str.capitalize()
+
+# Feature Engineering: Total Sales
+df["TotalSales"] = df["Quantity"] * df["Price"]
+
+# ----------------------
+# Step 3: Histogram of Product Prices
+# ----------------------
+
+plt.figure(figsize=(7,5))
+plt.hist(df["Price"], bins=10, edgecolor="black")
+plt.title("Distribution of Product Prices")
+plt.xlabel("Price")
+plt.ylabel("Frequency")
+plt.show()
