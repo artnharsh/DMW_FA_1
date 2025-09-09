@@ -1,0 +1,95 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# ----------------------
+# Step 1: Create Raw Dataset with Impurities
+# ----------------------
+data = {
+    "OrderID": [101, 102, 103, 103, 104, 105, 106, 107, 108, 109, 110],
+    "ProductCategory": ["Electronics", "electronics ", "Clothing", "Clothing", None, "Food", "FOOD", "toys", "Toys", "", "Clothing"],
+    "ProductName": ["Laptop", "Mobile", "Shirt", "Shirt", "Pants", "Chips", "Chocolate", "Car", "Ball", "Doll", None],
+    "Quantity": [1, 2, None, 1, 2, 3, "four", 1, 2, None, 1],
+    "Price": [50000, 20000, 1500, 1500, None, 50, 100, 300, 150, 200, 1200],
+}
+
+df = pd.DataFrame(data)
+
+# ----------------------
+# Step 2: Data Cleaning / Preprocessing
+# ----------------------
+
+# Remove duplicates
+df = df.drop_duplicates()
+
+# Handle missing values and wrong data types
+df["Quantity"] = pd.to_numeric(df["Quantity"], errors="coerce")
+df["Quantity"].fillna(df["Quantity"].median(), inplace=True)
+df["Price"].fillna(df["Price"].mean(), inplace=True)
+df["ProductName"].fillna("Unknown", inplace=True)
+df["ProductCategory"] = df["ProductCategory"].replace(["", None], "Misc")
+df["ProductCategory"] = df["ProductCategory"].str.strip().str.lower().str.capitalize()
+
+# Feature Engineering: Total Sales
+df["TotalSales"] = df["Quantity"] * df["Price"]
+
+# ----------------------
+# Step 3: Visualizations
+# ----------------------
+
+# 1. Bar Chart: Total Sales by Category
+plt.figure(figsize=(8,5))
+category_sales = df.groupby("ProductCategory")["TotalSales"].sum().reset_index()
+plt.bar(category_sales["ProductCategory"], category_sales["TotalSales"])
+plt.title("Total Sales by Product Category")
+plt.xlabel("Product Category")
+plt.ylabel("Total Sales")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# 2. Pie Chart: Share of Sales by Category
+plt.figure(figsize=(6,6))
+plt.pie(category_sales["TotalSales"], labels=category_sales["ProductCategory"], autopct="%1.1f%%", startangle=140)
+plt.title("Sales Distribution by Category")
+plt.show()
+
+# 3. Histogram: Distribution of Prices
+plt.figure(figsize=(7,5))
+plt.hist(df["Price"], bins=10, edgecolor="black")
+plt.title("Distribution of Product Prices")
+plt.xlabel("Price")
+plt.ylabel("Frequency")
+plt.show()
+
+# 4. Boxplot: Price Variation per Category
+plt.figure(figsize=(8,5))
+sns.boxplot(x="ProductCategory", y="Price", data=df)
+plt.title("Price Distribution by Category")
+plt.xticks(rotation=45)
+plt.show()
+
+# 5. Line Chart: Total Sales Trend by OrderID (simulated as time)
+plt.figure(figsize=(8,5))
+order_sales = df.groupby("OrderID")["TotalSales"].sum().reset_index()
+plt.plot(order_sales["OrderID"], order_sales["TotalSales"], marker="o")
+plt.title("Sales Trend by Order")
+plt.xlabel("Order ID")
+plt.ylabel("Total Sales")
+plt.grid(True)
+plt.show()
+
+# 6. Scatter Plot: Quantity vs Price
+plt.figure(figsize=(7,5))
+plt.scatter(df["Quantity"], df["Price"], alpha=0.7)
+plt.title("Quantity vs Price")
+plt.xlabel("Quantity")
+plt.ylabel("Price")
+plt.show()
+
+# 7. Heatmap: Correlation between numerical features
+plt.figure(figsize=(6,5))
+sns.heatmap(df.corr(numeric_only=True), annot=True, cmap="coolwarm", fmt=".2f")
+plt.title("Correlation Heatmap")
+plt.show()
